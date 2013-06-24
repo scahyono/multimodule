@@ -1,8 +1,3 @@
-<h1>Multi Module</h1> 
-<h2>Author</h2>
-<p><a href="http://cfwheels.org/user/profile/412">Singgih Cahyono</a></p>
-<h2>Project Home</h2>
-<p><a href="https://github.com/scahyono/MultiModule">https://github.com/scahyono/MultiModule</a><a href="https://github.com/dhumphreys/cfwheels-coldroute"></a></p>
 <h2>Description</h2>
 <p>This plugin allows multiple modules under a single wheels application. </p>
 <p> A module is a group of models, controllers and views stored under a single folder per module. The main benefit is each module can be made self-contained (with models, controllers, views, javascripts, etc..) and can be deployed independently from other modules.</p>
