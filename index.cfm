@@ -14,10 +14,10 @@
 In your /module1/controllers/Say.cfc: </p>
 <p>
   <pre>&lt;cfcomponent extends=&quot;controllers.Controller&quot;&gt;<br />	&lt;cffunction name=&quot;hello&quot;&gt;&lt;/cffunction&gt;<br />&lt;/cfcomponent&gt;</pre>
-In your /module1/views/say/index.cfm:</p>
+In your /module1/views/say/hello.cfm:</p>
 <p>
   <pre>&lt;h1&gt;Hello World!&lt;/h1&gt;</pre>
-This URL will access the module (for example if use Railo Express server):</p>
+This URL will access the module (for example if you use Railo Express server):</p>
 <p>http://localhost:8888/index.cfm/say/hello</p>
 <h2>Change Log</h2>
 <h3>Version 0.2 June 24, 2013</h3>
