@@ -1,6 +1,6 @@
 <cfcomponent output="false" displayname="Multi Module">
 
-  <cffunction name="init" access="public" output="false" returntype="any">
+	<cffunction name="init" access="public" output="false" returntype="any">
 		<cfset this.version = "1.1.8" />
 		<cfreturn this />
 	</cffunction>
@@ -33,9 +33,9 @@
 		<cfargument name="baseInclude" type="string">
 		<cfscript>
 			var loc = StructNew();
-			loc.siblingFolders = $subFolders();
-			for (loc.i = 1; loc.i <= loc.siblingFolders.RecordCount; loc.i ++) {
-				loc.result = loc.siblingFolders["name"][loc.i] & "/" & baseInclude;
+			loc.subFolders = $subFolders();
+			for (loc.i = 1; loc.i <= loc.subFolders.RecordCount; loc.i ++) {
+				loc.result = loc.subFolders["name"][loc.i] & "/" & baseInclude;
 				if (FileExists(ExpandPath(LCase(loc.result)))) return loc.result;
 			}
 			return baseInclude;
@@ -43,12 +43,13 @@
 	</cffunction>
 
 	<cffunction name="$subFolders" returntype="query">
-		<cfset var q = "">
-		<cfdirectory action="list" directory="../.." type="dir" name="q">
-		<cfquery name="q" dbtype="query">
-		select name from q where name not like '.%'
+		<cfset loc = StructNew()>
+		<cfset loc.rootPath = getDirectoryFromPath(getBaseTemplatePath())>
+		<cfdirectory action="list" directory="#loc.rootPath#" type="dir" name="loc.q">
+		<cfquery name="loc.q" dbtype="query">
+		select name from loc.q where name not like '.%'
 		</cfquery>
-		<cfreturn q>
+		<cfreturn loc.q>
 	</cffunction>
 
 	<cffunction name="$createControllerClass" returntype="any" access="public" output="false" mixin="global">
@@ -57,18 +58,19 @@
 		<cfargument name="type" type="string" required="false" default="controller" />
 		<cfscript>
 			var loc = StructNew();
+			loc.args = duplicate(arguments);
 			loc.basePath = arguments.controllerPaths;
-			loc.siblingFolders = $subFolders();
-			loc.results = "";
-			for (loc.i = 1; loc.i <= loc.siblingFolders.RecordCount; loc.i ++) {
-				loc.result = loc.siblingFolders["name"][loc.i] & "/" & loc.basePath
+			loc.subFolders = $subFolders();
+			loc.results = arguments.controllerPaths;
+			for (loc.i = 1; loc.i <= loc.subFolders.RecordCount; loc.i ++) {
+				loc.result = loc.subFolders["name"][loc.i] & "/" & loc.basePath;
 				if (DirectoryExists(ExpandPath(loc.result))) {
-					if ("" neq loc.results) loc.results = loc.results & ",";
+					loc.results = loc.results & ",";
 					loc.results = loc.results & loc.result;
 				}
 			}
-			arguments.controllerPaths = loc.results;
-			return core.$createControllerClass(argumentCollection=arguments);
+			loc.args.controllerPaths = loc.results;
+			return core.$createControllerClass(loc.args.name,loc.args.controllerPaths,loc.args.type);
 		</cfscript>
 	</cffunction>
 
@@ -78,19 +80,64 @@
 		<cfargument name="type" type="string" required="false" default="model" />
 		<cfscript>
 			var loc = StructNew();
+			loc.args = duplicate(arguments);
 			loc.basePath = arguments.modelPaths;
-			loc.siblingFolders = $subFolders();
-			loc.results = "";
-			for (loc.i = 1; loc.i <= loc.siblingFolders.RecordCount; loc.i ++) {
-				loc.result = loc.siblingFolders["name"][loc.i] & "/" & loc.basePath
+			loc.subFolders = $subFolders();
+			loc.results = arguments.modelPaths;
+			for (loc.i = 1; loc.i <= loc.subFolders.RecordCount; loc.i ++) {
+				loc.result = loc.subFolders["name"][loc.i] & "/" & loc.basePath;
 				if (DirectoryExists(ExpandPath(loc.result))) {
-					if ("" neq loc.results) loc.results = loc.results & ",";
+					loc.results = loc.results & ",";
 					loc.results = loc.results & loc.result;
 				}
 			}
-			arguments.modelPaths = loc.results;
-			return core.$createModelClass(argumentCollection=arguments);
+			loc.args.modelPaths = loc.results;
+			return core.$createModelClass(loc.args.name,loc.args.modelPaths,loc.args.type);
 		</cfscript>
+	</cffunction>
+
+	<cffunction name="$initControllerObject" returntype="any" access="public" output="false" mixin="controller">
+		<cfargument name="name" type="string" required="true">
+		<cfargument name="params" type="struct" required="true">
+		<cfscript>
+			var loc = {};
+			loc.template = "#application.wheels.viewPath#/#LCase(arguments.name)#/helpers.cfm";
+			if (! FileExists(ExpandPath(loc.template))) {
+				loc.subFolders = $subFolders();
+				for (loc.i = 1; loc.i <= loc.subFolders.RecordCount; loc.i ++) {
+					loc.template = "#loc.subFolders['name'][loc.i]#/#application.wheels.viewPath#/#LCase(arguments.name)#/helpers.cfm";
+					if (FileExists(ExpandPath(loc.template))) break;
+				}
+			}
+	
+			// create a struct for storing request specific data
+			variables.$instance = {};
+			variables.$instance.contentFor = {};
+	
+			// include controller specific helper files if they exist, cache the file check for performance reasons
+			loc.helperFileExists = false;
+			if (!ListFindNoCase(application.wheels.existingHelperFiles, arguments.name) && !ListFindNoCase(application.wheels.nonExistingHelperFiles, arguments.name))
+			{
+				if (FileExists(ExpandPath(loc.template)))
+					loc.helperFileExists = true;
+				if (application.wheels.cacheFileChecking)
+				{
+					if (loc.helperFileExists)
+						application.wheels.existingHelperFiles = ListAppend(application.wheels.existingHelperFiles, arguments.name);
+					else
+						application.wheels.nonExistingHelperFiles = ListAppend(application.wheels.nonExistingHelperFiles, arguments.name);
+				}
+			}
+			if (ListFindNoCase(application.wheels.existingHelperFiles, arguments.name) || loc.helperFileExists)
+				$include(template=loc.template);
+	
+			loc.executeArgs = {};
+			loc.executeArgs.name = arguments.name;
+			$simpleLock(name="controllerLock", type="readonly", execute="$setControllerClassData", executeArgs=loc.executeArgs);
+	
+			variables.params = arguments.params;
+		</cfscript>
+		<cfreturn this>
 	</cffunction>
 
 </cfcomponent>
