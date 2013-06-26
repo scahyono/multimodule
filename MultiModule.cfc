@@ -47,7 +47,9 @@
 		<cfset loc.rootPath = getDirectoryFromPath(getBaseTemplatePath())>
 		<cfdirectory action="list" directory="#loc.rootPath#" type="dir" name="loc.q">
 		<cfquery name="loc.q" dbtype="query">
-		select name from loc.q where name not like '.%'
+		select name from loc.q where name not like '.%' 
+		and name not in ('config','controllers','events','files','images','javascripts',
+		'lib','miscellaneous','models','plugins','stylesheets','tests','views','wheels')
 		</cfquery>
 		<cfreturn loc.q>
 	</cffunction>
