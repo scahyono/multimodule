@@ -1,6 +1,8 @@
 <h2>Description</h2>
 <p>This plugin allows multiple modules under a single wheels application. </p>
-<p> A module is a group of models, controllers and views stored under a single folder per module. The main benefit is each module can be made self-contained (with models, controllers, views, javascripts, etc..) and can be deployed independently from other modules.</p>
+<p> A module is a group of models, controllers and views stored under a single folder per module. 
+The main benefit is each module can be made self-contained (with models, controllers, views, javascripts, etc..). 
+And you can put your modules and wheels app in separate locations anywhere in your server.</p>
 
 <h2>Usage/Examples</h2>
 <p>In /config/app.cfm:</p>
