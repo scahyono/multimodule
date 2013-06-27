@@ -2,6 +2,7 @@
 
 	<cffunction name="init" access="public" output="false" returntype="any">
 		<cfset this.version = "1.1.8" />
+		<cfset $buildModulesCache()>
 		<cfreturn this />
 	</cffunction>
 	
@@ -24,34 +25,54 @@
 				loc.include = loc.include & "/" & arguments.$controllerName & "/" & loc.folderName & "/" & loc.fileName; // Include a file in a sub folder of the current controller
 			else
 				loc.include = loc.include & "/" & arguments.$controllerName & "/" & loc.fileName; // Include a file in the current controller's view folder
-			if (!FileExists(ExpandPath(LCase(loc.include)))) loc.include = $findInSubFolders(loc.include);
+			if (!FileExists(ExpandPath(LCase(loc.include)))) loc.include = $findInModules(loc.include);
 		</cfscript>
 		<cfreturn LCase(loc.include) />
 	</cffunction>
 
-	<cffunction name="$findInSubFolders" returntype="string">
+	<cffunction name="$findInModules" returntype="string">
 		<cfargument name="baseInclude" type="string">
 		<cfscript>
 			var loc = StructNew();
-			loc.subFolders = $subFolders();
-			for (loc.i = 1; loc.i <= loc.subFolders.RecordCount; loc.i ++) {
-				loc.result = loc.subFolders["name"][loc.i] & "/" & baseInclude;
+			loc.modules = $modules();
+			for (loc.i = 1; loc.i <= ArrayLen(loc.modules); loc.i ++) {
+				loc.result = loc.modules[loc.i] & "/" & baseInclude;
 				if (FileExists(ExpandPath(LCase(loc.result)))) return loc.result;
 			}
 			return baseInclude;
 		</cfscript>
 	</cffunction>
 
-	<cffunction name="$subFolders" returntype="query">
-		<cfset loc = StructNew()>
-		<cfset loc.rootPath = getDirectoryFromPath(getBaseTemplatePath())>
+	<cffunction name="$modules" returntype="array">
+		<cfscript>
+			if (IsDefined("application.multimodule.modulesCache")) return application.multimodule.modulesCache;
+			return $buildModulesCache();
+		</cfscript>
+	</cffunction>
+
+	<cffunction name="$buildModulesCache" returntype="array">
+		<cfscript>
+			var loc = StructNew();
+			if (IsDefined("application.multimodule.modulePaths")) {
+				application.multimodule.modulesCache = listToArray(application.multimodule.modulePaths);
+				return application.multimodule.modulesCache;
+			}
+		 	loc.rootPath = getDirectoryFromPath(getBaseTemplatePath());
+		</cfscript>
 		<cfdirectory action="list" directory="#loc.rootPath#" type="dir" name="loc.q">
 		<cfquery name="loc.q" dbtype="query">
 		select name from loc.q where name not like '.%' 
 		and name not in ('config','controllers','events','files','images','javascripts',
 		'lib','miscellaneous','models','plugins','stylesheets','tests','views','wheels')
 		</cfquery>
-		<cfreturn loc.q>
+		<cfscript>
+			loc.results = ArrayNew( 1 );
+			for (loc.i = 1 ; loc.i LTE loc.q.RecordCount ; loc.i ++){
+				ArrayAppend( loc.results, loc.q["name"][loc.i]);
+			}
+			application.multimodule.modulesCache = loc.results;
+			return( loc.results );
+		</cfscript>
 	</cffunction>
 
 	<cffunction name="$createControllerClass" returntype="any" access="public" output="false" mixin="global">
@@ -62,10 +83,10 @@
 			var loc = StructNew();
 			loc.args = duplicate(arguments);
 			loc.basePath = arguments.controllerPaths;
-			loc.subFolders = $subFolders();
+			loc.modules = $modules();
 			loc.results = arguments.controllerPaths;
-			for (loc.i = 1; loc.i <= loc.subFolders.RecordCount; loc.i ++) {
-				loc.result = loc.subFolders["name"][loc.i] & "/" & loc.basePath;
+			for (loc.i = 1; loc.i <= ArrayLen(loc.modules); loc.i ++) {
+				loc.result = loc.modules[loc.i] & "/" & loc.basePath;
 				if (DirectoryExists(ExpandPath(loc.result))) {
 					loc.results = loc.results & ",";
 					loc.results = loc.results & loc.result;
@@ -84,10 +105,10 @@
 			var loc = StructNew();
 			loc.args = duplicate(arguments);
 			loc.basePath = arguments.modelPaths;
-			loc.subFolders = $subFolders();
+			loc.modules = $modules();
 			loc.results = arguments.modelPaths;
-			for (loc.i = 1; loc.i <= loc.subFolders.RecordCount; loc.i ++) {
-				loc.result = loc.subFolders["name"][loc.i] & "/" & loc.basePath;
+			for (loc.i = 1; loc.i <= ArrayLen(loc.modules); loc.i ++) {
+				loc.result = loc.modules[loc.i] & "/" & loc.basePath;
 				if (DirectoryExists(ExpandPath(loc.result))) {
 					loc.results = loc.results & ",";
 					loc.results = loc.results & loc.result;
@@ -105,9 +126,9 @@
 			var loc = {};
 			loc.template = "#application.wheels.viewPath#/#LCase(arguments.name)#/helpers.cfm";
 			if (! FileExists(ExpandPath(loc.template))) {
-				loc.subFolders = $subFolders();
-				for (loc.i = 1; loc.i <= loc.subFolders.RecordCount; loc.i ++) {
-					loc.template = "#loc.subFolders['name'][loc.i]#/#application.wheels.viewPath#/#LCase(arguments.name)#/helpers.cfm";
+				loc.modules = $modules();
+				for (loc.i = 1; loc.i <= ArrayLen(loc.modules); loc.i ++) {
+					loc.template = "#loc.modules[loc.i]#/#application.wheels.viewPath#/#LCase(arguments.name)#/helpers.cfm";
 					if (FileExists(ExpandPath(loc.template))) break;
 				}
 			}
@@ -140,6 +161,51 @@
 			variables.params = arguments.params;
 		</cfscript>
 		<cfreturn this>
+	</cffunction>
+
+	<cffunction name="$abortInvalidRequest" returntype="void" access="public" output="false" mixin="global">
+		<cfscript>
+			var applicationPath = Replace(GetCurrentTemplatePath(), "\", "/", "all");
+			var callingPath = Replace(GetBaseTemplatePath(), "\", "/", "all");
+		</cfscript>
+		<cfif FileExists(cgi.path_translated)>
+		<cfinclude template="#cgi.script_name#">
+		<cfreturn>
+		</cfif>
+		<cfscript>
+			if (ListLen(callingPath, "/") GT ListLen(applicationPath, "/") || GetFileFromPath(callingPath) == "root.cfm")
+			{
+				$header(statusCode="404", statusText="Not Found");
+				$includeAndOutput(template="#application.wheels.eventPath#/onmissingtemplate.cfm");
+				$abort();
+			}
+		</cfscript>
+	</cffunction>
+
+	<cffunction name="$include" returntype="void" access="public" output="false" mixin="global">
+		<cfargument name="template" type="string" required="true">
+		<cfset var loc = {}>
+		<cfif template.startsWith("/")>
+			<cfinclude template="#LCase(arguments.template)#">
+		<cfelse>
+			<cfinclude template="../../#LCase(arguments.template)#">
+		</cfif>
+	</cffunction>
+
+	<cffunction name="$includeAndReturnOutput" returntype="string" access="public" output="false" mixin="global">
+		<cfargument name="$template" type="string" required="true">
+		<cfset var loc = {}>
+		<cfif StructKeyExists(arguments, "$type") AND arguments.$type IS "partial">
+			<!--- make it so the developer can reference passed in arguments in the loc scope if they prefer --->
+			<cfset loc = arguments>
+		</cfif>
+		<!--- we prefix returnValue with "wheels" here to make sure the variable does not get overwritten in the included template --->
+		<cfif $template.startsWith("/")>
+			<cfsavecontent variable="loc.wheelsReturnValue"><cfinclude template="#LCase(arguments.$template)#"></cfsavecontent>
+		<cfelse>
+			<cfsavecontent variable="loc.wheelsReturnValue"><cfinclude template="../../#LCase(arguments.$template)#"></cfsavecontent>
+		</cfif>
+		<cfreturn loc.wheelsReturnValue>
 	</cffunction>
 
 </cfcomponent>
