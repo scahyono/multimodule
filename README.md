@@ -48,10 +48,10 @@ If you have modules outside the wheels application, you have to configure two mo
 The example above assumes that your wheels application is NOT in the root (e.g.: /base) and you have four modules:<br/>
 <pre>
 root
-+ base
++ base (your wheels app folder, as sub folder under root)
   + module3
   + sub1/module4
-+ /module1
++ /module1 (your /say/hello module, outside your wheels app folder)
 + /admin/module2
 </pre>
 </p>
