@@ -36,15 +36,22 @@ If you have modules outside the wheels application, you have to configure two mo
 	this.mappings[&quot;/controllers&quot;] = getDirectoryFromPath(getBaseTemplatePath()) &amp; &quot;controllers&quot;;
 	this.mappings[&quot;/models&quot;] = getDirectoryFromPath(getBaseTemplatePath()) &amp; &quot;models&quot;;
 	
-	//list all modules
-	application.multimodule.modulePaths="/module1,/admin/module2,module3,sub1/module4";
-	
 	//explicit mappings is required for external modules
 	this.mappings[&quot;/module1/controllers&quot;] = ExpandPath(&quot;/module1/controllers&quot;);
 	this.mappings[&quot;/module1/models&quot;] = ExpandPath(&quot;/module1/models&quot;);
 	this.mappings[&quot;/admin/module2/controllers&quot;] = ExpandPath(&quot;/admin/module2/controllers&quot;);
 	this.mappings[&quot;/admin/module2/models&quot;] = ExpandPath(&quot;/admin/module2/models&quot;);
 &lt;/cfscript&gt;</pre>
+</p>
+<p>In /config/settings.cfm:</p>
+<p>
+<pre>
+&lt;cfscript&gt;
+	//list all modules
+	application.multimodule.modulePaths="/module1,/admin/module2,module3,sub1/module4";
+&lt;/cfscript&gt;</pre>
+</p>
+<p>
 The example above assumes that your wheels application is NOT in the root (e.g.: /base) and you have four modules:<br/>
 <pre>
 root
