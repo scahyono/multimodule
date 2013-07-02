@@ -84,15 +84,13 @@
 			loc.args = duplicate(arguments);
 			loc.basePath = arguments.controllerPaths;
 			loc.modules = $modules();
-			loc.results = arguments.controllerPaths;
 			for (loc.i = 1; loc.i <= ArrayLen(loc.modules); loc.i ++) {
 				loc.result = loc.modules[loc.i] & "/" & loc.basePath;
-				if (DirectoryExists(ExpandPath(loc.result))) {
-					loc.results = loc.results & ",";
-					loc.results = loc.results & loc.result;
+				if (FileExists(ExpandPath("#loc.result#/#name#.cfc"))) {
+					loc.args.controllerPaths = loc.result;
+					break;
 				}
 			}
-			loc.args.controllerPaths = loc.results;
 			return core.$createControllerClass(loc.args.name,loc.args.controllerPaths,loc.args.type);
 		</cfscript>
 	</cffunction>
@@ -260,6 +258,22 @@
 			}
 		</cfscript>
 		
+	</cffunction>
+
+	<cffunction name="$createObjectFromRoot" returntype="any" access="public" output="false" mixin="global">
+		<cfargument name="path" type="string" required="true">
+		<cfargument name="fileName" type="string" required="true">
+		<cfargument name="method" type="string" required="true">
+		<cfscript>
+			var returnValue = "";
+			arguments.returnVariable = "returnValue";
+			arguments.component = ListChangeDelims(arguments.path.replace("../",""), ".", "/") & "." & ListChangeDelims(arguments.fileName, ".", "/");
+			arguments.argumentCollection = Duplicate(arguments);
+			StructDelete(arguments, "path");
+			StructDelete(arguments, "fileName");
+		</cfscript>
+		<cfinclude template="../../root.cfm">
+		<cfreturn returnValue>
 	</cffunction>
 
 </cfcomponent>
