@@ -57,18 +57,16 @@
 				application.multimodule.modulesCache = listToArray(application.multimodule.modulePaths);
 				return application.multimodule.modulesCache;
 			}
-		 	loc.rootPath = getDirectoryFromPath(getBaseTemplatePath());
+		 	loc.modulesPath = getDirectoryFromPath(getBaseTemplatePath()) & '/modules';
 		</cfscript>
-		<cfdirectory action="list" directory="#loc.rootPath#" type="dir" name="loc.q">
+		<cfdirectory action="list" directory="#loc.modulesPath#" type="dir" name="loc.q">
 		<cfquery name="loc.q" dbtype="query">
 		select name from loc.q where name not like '.%' 
-		and name not in ('config','controllers','events','files','images','javascripts',
-		'lib','miscellaneous','models','plugins','stylesheets','tests','views','wheels')
 		</cfquery>
 		<cfscript>
 			loc.results = ArrayNew( 1 );
 			for (loc.i = 1 ; loc.i LTE loc.q.RecordCount ; loc.i ++){
-				ArrayAppend( loc.results, loc.q["name"][loc.i]);
+				ArrayAppend( loc.results, 'modules/' & loc.q["name"][loc.i]);
 			}
 			application.multimodule.modulesCache = loc.results;
 			return( loc.results );
