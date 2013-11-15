@@ -26,3 +26,27 @@ In your /modules/module1/views/say/hello.cfm:</p>
 This URL will access the module (for example if you use <a href="http://www.getrailo.org/index.cfm/download/">Railo Express</a>):</p>
 <pre><a href="http://localhost:8888/index.cfm/say/hello">http://localhost:8888/index.cfm/say/hello</a></pre>
 <p>
+
+<h2>Namespace Modules in URL</h2>
+<p>In /config/Routes.cfm:</p>
+<p>
+<pre>
+&lt;cfscript&gt;
+addRoute(
+    name="moduleRoute", 
+	pattern="/m/[moduleName]/[controller]/[action]/[key].[format]"
+);
+addRoute(
+	name="moduleRoute", 
+	pattern="/m/[moduleName]/[controller]/[action]"
+);
+&lt;/cfscript&gt;</pre>
+
+This URL will access the namespaced module:</p>
+<pre><a href="http://localhost:8888/index.cfm/module1/say/hello">http://localhost:8888/index.cfm/module1/say/hello</a></pre>
+
+<p></p>
+
+<p>This will make the plugin check the [moduleName]'s controllers, models, views, etc first, and if something is not found it will fall back to checking other module folders. If you don't  want the plugin to check other modules when [moduleName] is defined then edit multimodule.cfc and change line 14 to &lt;cfreturn false&gt;</p>
+
+</p>
