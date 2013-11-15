@@ -50,6 +50,3 @@ This URL will access the namespaced module:</p>
 <p>This will make the plugin check the [moduleName]'s controllers, models, views, etc first, and if something is not found it will fall back to checking other module folders. If you don't  want the plugin to check other modules when [moduleName] is defined then edit multimodule.cfc and change line 14 to &lt;cfreturn true&gt;</p>
 
 </p>
-<p>
-<pre>
-
