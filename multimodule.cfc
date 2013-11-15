@@ -22,12 +22,18 @@
 			{			
 				if(!structKeyExists(variables,"params") && isDefined("core.$paramParser"))
 				{
-					request.moduleName = core.$paramParser().moduleName;	
-				} else if (structKeyExists(params,"moduleName")) {
+					loc.paramParser = core.$paramParser();
+										
+					if(structKeyExists(loc.paramParser,"moduleName")) {
+						request.moduleName = core.$paramParser().moduleName;
+					}
+				} 
+				
+				if (structKeyExists(variables,"params") && structKeyExists(params,"moduleName")) {
 					request.moduleName = params.moduleName;
 				}
 			}	
-			
+						
 			if(DirectoryExists(ExpandPath(LCase("modules/" & request.moduleName))))
 			{
 				return "modules/" & request.moduleName;

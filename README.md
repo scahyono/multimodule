@@ -43,7 +43,7 @@ addRoute(
 &lt;/cfscript&gt;</pre>
 
 This URL will access the namespaced module:</p>
-<pre><a href="http://localhost:8888/index.cfm/module1/say/hello">http://localhost:8888/index.cfm/module1/say/hello</a></pre>
+<pre><a href="http://localhost:8888/index.cfm/m/module1/say/hello">http://localhost:8888/index.cfm/m/module1/say/hello</a></pre>
 
 <p></p>
 
