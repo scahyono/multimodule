@@ -1,8 +1,5 @@
 <cfcomponent output="false" displayname="Multi Module">
 
-	<!--- Settings --->
-	<cfset request.checkAllModuleFolders = false>
-	
 	<cffunction name="init" access="public" output="false" returntype="any">
 		<cfset this.version = "1.1.8" />		
 		<cfset $buildModulesCache()>
@@ -11,8 +8,8 @@
 	
 	<cffunction name="doCheckAllModules" returntype="string">	
 		<!--- 
-			True: Check URL then check all modules in modules folder
-			False: Only allow module to be set from url (Add [moduleName] to route)
+			True: Check all module folders no matter what
+			False: If [moduleName] is defined in params then only check its models, views, etc no matter what
 		--->
 		<cfreturn true>
 	</cffunction>
@@ -75,9 +72,10 @@
 			if(len(getModuleFromUrl())) { 
 				loc.result = getModuleFromUrl() & "/" & baseInclude;
 				if (FileExists(ExpandPath(LCase(loc.result)))) return loc.result;		
+			}
 			
 			// Not in url? Go look through modules folder
-			} else if (doCheckAllModules()) {
+			if (doCheckAllModules()) {
 				
 				for (loc.i = 1; loc.i <= ArrayLen(loc.modules); loc.i ++) {
 					loc.result = loc.modules[loc.i] & "/" & baseInclude;
@@ -135,8 +133,10 @@
 				if (FileExists(ExpandPath("#loc.result#/#name#.cfc"))) {
 					loc.args.controllerPaths = loc.result;					
 				}
+			}
+			
 			// Not in url? Go look through modules folder
-			} else if (doCheckAllModules()) {
+			if (doCheckAllModules()) {
 				for (loc.i = 1; loc.i <= ArrayLen(loc.modules); loc.i ++) {
 					loc.result = loc.modules[loc.i] & "/" & loc.basePath;
 					if (FileExists(ExpandPath("#loc.result#/#name#.cfc"))) {
@@ -162,15 +162,8 @@
 			loc.modules = $modules();
 			loc.results = arguments.modelPaths;
 			
-			// Override module name via URL
-			if(len(getModuleFromUrl())) { 
-				loc.result = getModuleFromUrl() & "/" & loc.basePath;
-				if (DirectoryExists(ExpandPath(loc.result))) {
-					loc.results = loc.results & ",";
-					loc.results = loc.results & loc.result;
-				}
-			// Not in url? Go look through modules folder
-			} else if (doCheckAllModules()) {
+			// Go look through modules folder
+			if (doCheckAllModules()) {
 				for (loc.i = 1; loc.i <= ArrayLen(loc.modules); loc.i ++) {
 					loc.result = loc.modules[loc.i] & "/" & loc.basePath;
 					if (DirectoryExists(ExpandPath(loc.result))) {
@@ -179,6 +172,16 @@
 					}
 				}
 			}
+			
+			// Override module name via URL
+			if(len(getModuleFromUrl())) { 
+				loc.result = getModuleFromUrl() & "/" & loc.basePath;
+				if (DirectoryExists(ExpandPath(loc.result))) {
+					loc.results = loc.results & ",";
+					loc.results = loc.results & loc.result;
+				}
+			}
+			
 			loc.args.modelPaths = loc.results;
 			return core.$createModelClass(loc.args.name,loc.args.modelPaths,loc.args.type);
 		</cfscript>
