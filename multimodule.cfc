@@ -15,9 +15,9 @@
 	</cffunction>
 	
 	<cffunction name="getModuleFromUrl" returntype="string">		
+		<cfset var loc = StructNew()>
+		<cfparam name="request.moduleName" default="">
 		<cfscript>			
-			param name="request.moduleName" default="";
-			
 			if(!len(request.moduleName))
 			{			
 				if(!structKeyExists(variables,"params") && isDefined("core.$paramParser"))
@@ -201,7 +201,7 @@
 			loc.template = "#application.wheels.viewPath#/#LCase(arguments.name)#/helpers.cfm";
 			if (! FileExists(ExpandPath(loc.template))) {
 				if(len(getModuleFromUrl())) { 
-					loc.result = getModuleFromUrl()
+					loc.result = getModuleFromUrl();
 					loc.template = "#getModuleFromUrl()#/#application.wheels.viewPath#/#LCase(arguments.name)#/helpers.cfm";
 					if (FileExists(ExpandPath(loc.template))) break;
 				} else if (doCheckAllModules()) {
