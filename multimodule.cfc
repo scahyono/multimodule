@@ -9,34 +9,33 @@
 	<cffunction name="doCheckAllModules" returntype="string">	
 		<!--- 
 			True: Check all module folders no matter what
-			False: If [moduleName] is defined in params then only check its models, views, etc no matter what
+			False: If [module] is defined in params then only check its models, views, etc no matter what
 		--->
 		<cfreturn true>
 	</cffunction>
 	
 	<cffunction name="getModuleFromUrl" returntype="string">		
 		<cfset var loc = StructNew()>
-		<cfparam name="request.moduleName" default="">
+		<cfparam name="request.module" default="">
 		<cfscript>			
-			if(!len(request.moduleName))
+			if(!len(request.module))
 			{			
 				if(!structKeyExists(variables,"params") && isDefined("core.$paramParser"))
 				{
 					loc.paramParser = core.$paramParser();
 										
-					if(structKeyExists(loc.paramParser,"moduleName")) {
-						request.moduleName = core.$paramParser().moduleName;
+					if(structKeyExists(loc.paramParser,"module")) {
+						request.module = core.$paramParser().module;
 					}
 				} 
 				
-				if (structKeyExists(variables,"params") && structKeyExists(params,"moduleName")) {
-					request.moduleName = params.moduleName;
+				if (structKeyExists(variables,"params") && structKeyExists(params,"module")) {
+					request.module = params.module;
 				}
 			}	
-						
-			if(DirectoryExists(ExpandPath(LCase("modules/" & request.moduleName))))
+			if(DirectoryExists(ExpandPath(LCase("modules" & request.module))))
 			{
-				return "modules/" & request.moduleName;
+				return "modules" & request.module;
 			} else {
 				return "";
 			}
