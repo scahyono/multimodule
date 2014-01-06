@@ -28,17 +28,18 @@ This URL will access the module (for example if you use <a href="http://www.getr
 <p>
 
 <h2>Namespace Modules in URL</h2>
-<p>In /config/Routes.cfm:</p>
+<p>Namespace works only with controllers and views. Those controllers still can access any models from any modules, regardless of there is a namespace in the URL or not.</p>
+<p>In /config/routes.cfm:</p>
 <p>
 <pre>
 &lt;cfscript&gt;
 addRoute(
     name="moduleRoute", 
-	pattern="/m/[moduleName]/[controller]/[action]/[key].[format]"
+	pattern="/m/[module]/[controller]/[action]/[key].[format]"
 );
 addRoute(
 	name="moduleRoute", 
-	pattern="/m/[moduleName]/[controller]/[action]"
+	pattern="/m/[module]/[controller]/[action]"
 );
 &lt;/cfscript&gt;</pre>
 
@@ -47,6 +48,7 @@ This URL will access the namespaced module:</p>
 
 <p></p>
 
-<p>This will make the plugin check the [moduleName]'s controllers, models, views, etc first, and if something is not found it will fall back to checking other module folders. If you don't  want the plugin to check other modules when [moduleName] is defined then edit multimodule.cfc and change line 14 to &lt;cfreturn false&gt;</p>
+<p>This will make the plugin check the [module]'s controllers, models, views, etc first, and if something is not found it will fall back to checking other module folders. If you don't  want the plugin to check other modules when [module] is specified then add in /config/settings.cfm:</p>
+<pre>&lt;cfset set(multiModuleCheckAllModules=false)></pre>
 
 </p>
