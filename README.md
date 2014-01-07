@@ -43,6 +43,18 @@ addRoute(
 );
 &lt;/cfscript&gt;</pre>
 
+<p>VERY USEFUL! Set module param by appending the module name and a tilde(~) to the route name. ie:</p>
+<p>In /config/routes.cfm:</p>
+<pre>
+&lt;cfscript&gt;
+addRoute(
+	name="public~PageRoute", 
+	pattern="/p/[id]",
+	controller="pages", 
+	action="page"
+);
+&lt;/cfscript&gt;</pre>
+
 This URL will access the namespaced module:</p>
 <pre><a href="http://localhost:8888/index.cfm/m/module1/say/hello">http://localhost:8888/index.cfm/m/module1/say/hello</a></pre>
 

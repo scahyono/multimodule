@@ -11,7 +11,7 @@
 			True: Check all module folders no matter what
 			False: If [module] is defined in params then only check its models, views, etc no matter what
 		--->
-		<cfreturn true>
+		<cfreturn false>
 	</cffunction>
 	
 	<cffunction name="getModuleFromUrl" returntype="string">		
@@ -22,24 +22,25 @@
 			{			
 				if(!structKeyExists(variables,"params") && isDefined("core.$paramParser"))
 				{
-					loc.paramParser = core.$paramParser();
-										
-					if(structKeyExists(loc.paramParser,"module")) {
-						request.module = core.$paramParser().module;
-					}
-				} 
-				
-				if (structKeyExists(variables,"params") && structKeyExists(params,"module")) {
-					request.module = params.module;
+					loc.params = core.$paramParser();
+					
+				} else if (structKeyExists(variables,"params")) {
+					loc.params = params;
+					
+				} else {
+					loc.params = {};
 				}
-			}	
-			if(DirectoryExists(ExpandPath(LCase("modules" & request.module))))
-			{
-				return "modules" & request.module;
-			} else {
-				return "";
+					
+				// Check to see if module param was found
+				if(structKeyExists(loc.params,"module")) {
+					request.module = loc.params.module;
+				}
+				// Else check route name for module (before ~)
+				else if(StructKeyExists(loc.params,"route") && find("~",loc.params.route))
+				{
+					request.module = ListFirst(loc.params.route,"~");
+				}				
 			}
-			
 		</cfscript>
 	</cffunction>
 	
@@ -200,7 +201,7 @@
 			loc.template = "#application.wheels.viewPath#/#LCase(arguments.name)#/helpers.cfm";
 			if (! FileExists(ExpandPath(loc.template))) {
 				if(len(getModuleFromUrl())) { 
-					loc.result = getModuleFromUrl();
+					loc.result = getModuleFromUrl()
 					loc.template = "#getModuleFromUrl()#/#application.wheels.viewPath#/#LCase(arguments.name)#/helpers.cfm";
 					if (FileExists(ExpandPath(loc.template))) break;
 				} else if (doCheckAllModules()) {
@@ -311,7 +312,9 @@
 			{
 				try
 				{
-					renderPage();
+					// Added to prevent error
+					request.wheels.deprecation = [];
+					renderPage(); // Change to renderView for 1.2
 				}
 				catch(Any e)
 				{
@@ -408,5 +411,4 @@
 			return loc.returnValue;
 		</cfscript>
 	</cffunction>
-
 </cfcomponent>
