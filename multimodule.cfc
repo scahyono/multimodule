@@ -201,7 +201,7 @@
 			loc.template = "#application.wheels.viewPath#/#LCase(arguments.name)#/helpers.cfm";
 			if (! FileExists(ExpandPath(loc.template))) {
 				if(len(getModuleFromUrl())) { 
-					loc.result = getModuleFromUrl()
+					loc.result = getModuleFromUrl();
 					loc.template = "#getModuleFromUrl()#/#application.wheels.viewPath#/#LCase(arguments.name)#/helpers.cfm";
 					if (FileExists(ExpandPath(loc.template))) break;
 				} else if (doCheckAllModules()) {
