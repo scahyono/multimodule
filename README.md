@@ -43,7 +43,7 @@ addRoute(
 );
 &lt;/cfscript&gt;</pre>
 
-<p>VERY USEFUL! Set module param by appending the module name and a tilde(~) to the route name. ie:</p>
+<p>VERY USEFUL! Set module param by prepending the module name and a tilde(~) to the route name. ie:</p>
 <p>In /config/routes.cfm:</p>
 <pre>
 &lt;cfscript&gt;
