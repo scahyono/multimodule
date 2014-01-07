@@ -15,11 +15,11 @@
 		<cfif arguments.type eq "models">
 			<cfreturn true>
 		<cfelseif arguments.type eq "controllers">
-			<cfreturn false>
+			<cfreturn true>
 		<cfelseif arguments.type eq "modules">
-			<cfreturn false>
+			<cfreturn true>
 		<cfelse>
-			<cfreturn false>
+			<cfreturn true>
 		</cfif>			
 	</cffunction>
 	
