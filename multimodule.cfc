@@ -41,6 +41,13 @@
 					request.module = ListFirst(loc.params.route,"~");
 				}				
 			}
+			
+			if(DirectoryExists(ExpandPath(LCase("modules\" & request.module))))
+			{
+				return "modules\" & request.module;
+			} else {
+				return "";
+			}
 		</cfscript>
 	</cffunction>
 	
@@ -75,7 +82,7 @@
 			loc.modules = $modules();
 			
 			// Override module name via URL
-			if(len(getModuleFromUrl())) { 
+			if(len(getModuleFromUrl())) { 		
 				loc.result = getModuleFromUrl() & "/" & baseInclude;
 				if (FileExists(ExpandPath(LCase(loc.result)))) return loc.result;		
 			}
@@ -150,8 +157,7 @@
 						break;
 					}
 				}
-			}
-			
+			}			
 			
 			return core.$createControllerClass(loc.args.name,loc.args.controllerPaths,loc.args.type);
 		</cfscript>
