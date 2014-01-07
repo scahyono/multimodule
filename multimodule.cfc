@@ -11,7 +11,7 @@
 			True: Check all module folders no matter what
 			False: If [module] is defined in params then only check its models, views, etc no matter what
 		--->
-		<cfreturn false>
+		<cfreturn true>
 	</cffunction>
 	
 	<cffunction name="getModuleFromUrl" returntype="string">		
