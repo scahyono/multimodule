@@ -6,12 +6,21 @@
 		<cfreturn this />
 	</cffunction>
 	
-	<cffunction name="doCheckAllModules" returntype="string">	
+	<cffunction name="doCheckAll" returntype="string">
+		<cfargument name="type" default="all">	
 		<!--- 
-			True: Check all module folders no matter what
+			True: Check all type folders no matter what
 			False: If [module] is defined in params then only check its models, views, etc no matter what
-		--->
-		<cfreturn true>
+		--->		
+		<cfif arguments.type eq "models">
+			<cfreturn true>
+		<cfelseif arguments.type eq "controllers">
+			<cfreturn true>
+		<cfelseif arguments.type eq "modules">
+			<cfreturn true>
+		<cfelse>
+			<cfreturn true>
+		</cfif>			
 	</cffunction>
 	
 	<cffunction name="getModuleFromUrl" returntype="string">		
@@ -22,24 +31,32 @@
 			{			
 				if(!structKeyExists(variables,"params") && isDefined("core.$paramParser"))
 				{
-					loc.paramParser = core.$paramParser();
-										
-					if(structKeyExists(loc.paramParser,"module")) {
-						request.module = core.$paramParser().module;
-					}
-				} 
-				
-				if (structKeyExists(variables,"params") && structKeyExists(params,"module")) {
-					request.module = params.module;
+					loc.params = core.$paramParser();
+					
+				} else if (structKeyExists(variables,"params")) {
+					loc.params = params;
+					
+				} else {
+					loc.params = {};
 				}
-			}	
-			if(DirectoryExists(ExpandPath(LCase("modules" & request.module))))
+					
+				// Check to see if module param was found
+				if(structKeyExists(loc.params,"module")) {
+					request.module = loc.params.module;
+				}
+				// Else check route name for module (before ~)
+				else if(StructKeyExists(loc.params,"route") && find("~",loc.params.route))
+				{
+					request.module = ListFirst(loc.params.route,"~");
+				}				
+			}
+			
+			if(DirectoryExists(ExpandPath(LCase("modules\" & request.module))))
 			{
-				return "modules" & request.module;
+				return "modules\" & request.module;
 			} else {
 				return "";
 			}
-			
 		</cfscript>
 	</cffunction>
 	
@@ -74,13 +91,13 @@
 			loc.modules = $modules();
 			
 			// Override module name via URL
-			if(len(getModuleFromUrl())) { 
+			if(len(getModuleFromUrl())) { 		
 				loc.result = getModuleFromUrl() & "/" & baseInclude;
 				if (FileExists(ExpandPath(LCase(loc.result)))) return loc.result;		
 			}
 			
 			// Not in url? Go look through modules folder
-			if (doCheckAllModules()) {
+			if (doCheckAll("modules")) {
 				
 				for (loc.i = 1; loc.i <= ArrayLen(loc.modules); loc.i ++) {
 					loc.result = loc.modules[loc.i] & "/" & baseInclude;
@@ -141,7 +158,7 @@
 			}
 			
 			// Not in url? Go look through modules folder
-			if (doCheckAllModules()) {
+			if (doCheckAll("controllers")) {
 				for (loc.i = 1; loc.i <= ArrayLen(loc.modules); loc.i ++) {
 					loc.result = loc.modules[loc.i] & "/" & loc.basePath;
 					if (FileExists(ExpandPath("#loc.result#/#name#.cfc"))) {
@@ -149,8 +166,7 @@
 						break;
 					}
 				}
-			}
-			
+			}			
 			
 			return core.$createControllerClass(loc.args.name,loc.args.controllerPaths,loc.args.type);
 		</cfscript>
@@ -168,7 +184,7 @@
 			loc.results = arguments.modelPaths;
 			
 			// Go look through modules folder
-			if (doCheckAllModules()) {
+			if (doCheckAll("models")) {
 				for (loc.i = 1; loc.i <= ArrayLen(loc.modules); loc.i ++) {
 					loc.result = loc.modules[loc.i] & "/" & loc.basePath;
 					if (DirectoryExists(ExpandPath(loc.result))) {
@@ -203,7 +219,7 @@
 					loc.result = getModuleFromUrl();
 					loc.template = "#getModuleFromUrl()#/#application.wheels.viewPath#/#LCase(arguments.name)#/helpers.cfm";
 					if (FileExists(ExpandPath(loc.template))) break;
-				} else if (doCheckAllModules()) {
+				} else if (doCheckAll("controllers")) {
 					loc.modules = $modules();
 					for (loc.i = 1; loc.i <= ArrayLen(loc.modules); loc.i ++) {
 						loc.template = "#loc.modules[loc.i]#/#application.wheels.viewPath#/#LCase(arguments.name)#/helpers.cfm";
@@ -311,7 +327,9 @@
 			{
 				try
 				{
-					renderPage();
+					// Added to prevent error
+					request.wheels.deprecation = [];
+					renderPage(); // Change to renderView for 1.2
 				}
 				catch(Any e)
 				{
@@ -408,5 +426,4 @@
 			return loc.returnValue;
 		</cfscript>
 	</cffunction>
-
 </cfcomponent>
