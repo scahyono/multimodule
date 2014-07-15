@@ -1,4 +1,4 @@
-package net.sidic.multimodule;
+package org.cfwheels.cfwheels;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -90,6 +90,7 @@ public class CFWheelsCoreIT {
 		String content = new String(Files.readAllBytes(Paths.get("wheels/Plugins.cfc")));
 		content = content.replace("mixableComponents = \"application,dispatch,controller,model,cache,base,connection,microsoftsqlserver,mysql,oracle,postgresql,h2\"","mixableComponents = \"application,dispatch,controller,model,cache,base,connection,microsoftsqlserver,mysql,oracle,postgresql,h2,test\"");
 		Files.write(Paths.get("wheels/Plugins.cfc"), content.getBytes());
+		Files.write(Paths.get("config/settings.cfm"), "<cfset set(deletePluginDirectories=false)>\n<cfset set(dataSourceName=\"wheelstestdb\")>".getBytes());
 
 		System.out.println("test database re-create");
 		driver.get(baseUrl + "index.cfm");

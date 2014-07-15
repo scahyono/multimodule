@@ -28,6 +28,7 @@ Benefits of embedded-container-test versus full-integration-test
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<cfwheelsVersion>1.1.8</cfwheelsVersion>
+		<cfwheelsZipfile>v${cfwheelsVersion}.zip</cfwheelsZipfile>
 		<railoVersion>3.3.5.004</railoVersion>
 		<jettyVersion>8.1.15.v20140411</jettyVersion>
 		<railoConfig>railo-server.xml</railoConfig>
@@ -164,8 +165,21 @@ Benefits of embedded-container-test versus full-integration-test
 						<phase>clean</phase>
 						<configuration>
 							<target>
+								<delete dir="builders"/>
+								<delete dir="config"/>
+								<delete dir="controllers"/>
+								<delete dir="events"/>
+								<delete dir="miscellaneous"/>
+								<delete dir="models"/>
+								<delete dir="views"/>
 								<delete dir="WEB-INF"/>
 								<delete dir="wheels" />
+								<delete>
+									<fileset dir="." includes="*.cf?"/>
+								</delete>
+								<delete file=".htaccess" />
+								<delete file="IsapiRewrite4.ini" />
+								<delete file="web.config" />
 							</target>
 						</configuration>
 						<goals>
@@ -223,7 +237,7 @@ Benefits of embedded-container-test versus full-integration-test
 									<goal>download-single</goal>
 								</goals>
 								<configuration>
-									<fromFile>v${cfwheelsVersion}.zip</fromFile>
+									<fromFile>${cfwheelsZipfile}</fromFile>
 									<url>https://github.com/cfwheels/cfwheels/archive/</url>
 									<toFile>target/cfwheels.zip</toFile>
 								</configuration>

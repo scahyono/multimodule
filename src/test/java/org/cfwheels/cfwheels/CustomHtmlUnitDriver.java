@@ -1,4 +1,4 @@
-package net.sidic.multimodule;
+package org.cfwheels.cfwheels;
 
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 
