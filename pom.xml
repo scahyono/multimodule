@@ -1,0 +1,243 @@
+<!--
+installing Maven:
+  - on linux: sudo apt-get install maven
+  - other OS: the same as installing CFEclipse plugin on Eclipse IDE
+usage:
+  - "mvn verify" to download cfwheels and run core and multimodule tests on embedded railo and H2 database (use port 8080 for embedded web server)
+     (on Eclipse, Run->Run As->9 Maven install)
+  - Execute "mvn jetty:run" to start the embedded web server to run individual tests
+    (In Eclipse, Run->Run As->6 Maven build...)
+  - Individual core tests URL: http://localhost:8080/index.cfm?controller=wheels&action=wheels&view=tests&type=core  
+  - Individual plugin tests URL: http://localhost:8080/index.cfm?controller=wheels&action=wheels&view=tests&type=core  
+
+Benefits of embedded-container-test versus full-integration-test
+  #1 clean test data (data is not shared with nor contaminated by other processes)
+  #2 ready for continuous integration (no database or web server required on the CI server)
+  #3 secure (no password necessary to connect to external database server)
+  #4 fast and predictable (all tests run without external network connection)
+  #5 instant result (changes on source code is visible immediately without the need to upload to remote server)
+
+ -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>net.sidic</groupId>
+	<artifactId>multimodule</artifactId>
+	<version>0.6-SNAPSHOT</version>
+	<packaging>war</packaging>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<cfwheelsVersion>1.1.8</cfwheelsVersion>
+		<railoVersion>3.3.5.004</railoVersion>
+		<jettyVersion>8.1.15.v20140411</jettyVersion>
+		<railoConfig>railo-server.xml</railoConfig>
+	</properties>
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.11</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.seleniumhq.selenium</groupId>
+			<artifactId>selenium-java</artifactId>
+			<version>2.25.0</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<version>1.4.178</version>
+		</dependency>
+		<dependency>
+			<groupId>org.getrailo</groupId>
+			<artifactId>railo</artifactId>
+			<version>${railoVersion}</version>
+		</dependency>
+	</dependencies>
+	<build>
+		<extensions>
+			<extension>
+				<groupId>org.apache.maven.wagon</groupId>
+				<artifactId>wagon-ftp</artifactId>
+				<version>2.6</version>
+			</extension>
+		</extensions>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.3.2</version>
+				<configuration>
+					<source>1.7</source>
+					<target>1.7</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<version>2.12.4</version>
+				<executions>
+					<execution>
+						<id>integration-test</id>
+						<goals>
+							<goal>integration-test</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>verify</id>
+						<goals>
+							<goal>verify</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<!-- embedded web server for testing -->
+				<groupId>org.mortbay.jetty</groupId>
+				<artifactId>jetty-maven-plugin</artifactId>
+				<version>${jettyVersion}</version>
+				<configuration>
+					<!-- skip starting web server during package preparation phase on Travis-CI -->
+					<skip>${skipTests}</skip>
+					<!-- use root source folder. So, file changes can be seen instantly -->
+					<webAppSourceDirectory>.</webAppSourceDirectory>
+					<!-- web.xml required for railo -->
+					<webXml>src/test/xml/web.xml</webXml>
+					<webApp>
+						<!-- the URL context path -->
+						<contextPath>/</contextPath>
+					</webApp>
+					<!-- required to allow stopping the server -->
+					<stopPort>9966</stopPort>
+					<stopKey>STOP</stopKey>
+				</configuration>
+				<executions>
+					<execution>
+						<id>start-jetty</id>
+						<phase>pre-integration-test</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<daemon>true</daemon>
+						</configuration>
+					</execution>
+					<execution>
+						<id>stop-jetty</id>
+						<phase>post-integration-test</phase>
+						<goals>
+							<goal>stop</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>1.7</version>
+				<executions>
+					<execution>
+						<id>configure</id>
+						<phase>package</phase>
+						<configuration>
+							<target>
+								<copy file="src/test/xml/${railoConfig}"
+									tofile="${settings.localRepository}/org/getrailo/railo/${railoVersion}/railo-server/context/railo-server.xml"
+									overwrite="true" />
+								<unzip src="${project.build.directory}/cfwheels.zip" dest="target/" />
+								<move todir="." overwrite="false">
+									<fileset
+										dir="target/cfwheels-${cfwheelsVersion}">
+										<include name="**/*" />
+									</fileset>
+								</move>
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>clean-cfwheels</id>
+						<phase>clean</phase>
+						<configuration>
+							<target>
+								<delete dir="WEB-INF"/>
+								<delete dir="wheels" />
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+				<version>2.4</version>
+				<configuration>
+					<!-- web.xml is not necessary for final package, only during testing -->
+					<webXml>src/test/xml/web.dummy.xml</webXml>
+					<webResources>
+						<resource>
+							<!-- the sources are in the root, not under src/main/webapp -->
+							<directory>.</directory>
+							<excludes>
+								<exclude>.settings/**</exclude>
+								<exclude>src/**</exclude>
+								<exclude>target/**</exclude>
+								<exclude>WEB-INF/**</exclude>
+								<exclude>.*</exclude>
+								<exclude>pom.xml</exclude>
+							</excludes>
+						</resource>
+					</webResources>
+					<!-- exclude unnecessary binaries from final package -->
+			        <packagingExcludes>WEB-INF/**</packagingExcludes>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	<profiles>
+		<profile>
+			<id>download-cfwheels</id>
+			<activation>
+				<file>
+					<missing>target/cfwheels.zip</missing>
+				</file>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>wagon-maven-plugin</artifactId>
+						<version>1.0-beta-5</version>
+						<executions>
+							<execution>
+								<id>download-cfwheels</id>
+								<phase>test</phase>
+								<goals>
+									<goal>download-single</goal>
+								</goals>
+								<configuration>
+									<fromFile>v${cfwheelsVersion}.zip</fromFile>
+									<url>https://github.com/cfwheels/cfwheels/archive/</url>
+									<toFile>target/cfwheels.zip</toFile>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+	<repositories>
+		<repository>
+			<id>cfmlprojects.org</id>
+			<url>http://cfmlprojects.org/artifacts</url>
+		</repository>
+	</repositories>
+</project>
