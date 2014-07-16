@@ -1,0 +1,30 @@
+MULTIMODULE VERSION 0.6 (16/07/2013)
+
+Enhancements
+============
+* Added URL namespacing (Tim Badolato)
+* Module URL param can be mandatory (Tim Badolato)
+* Allow set(multiModulePaths) to override modules search (Singgih Cahyono)
+
+Miscellaneous
+=============
+* Wheels compatibility: 1.1.8, 1.2.0
+
+MULTIMODULE VERSION 0.2-0.5 (15/07/2013)
+
+Enhancements
+============
+* default module folder is now "modules"
+
+Bug Fixes
+=========
+* missing layout.cfm in modules
+* UNIX-friendly lowercase name
+* Ability to put modules and wheels app in separate locations anywhere in the server (ADVANCED)
+* missing helpers.cfm in modules
+
+Miscellaneous
+=============
+* Tested on Adobe ColdFusion 8
+* Wheels compatibility: 1.1.8
+
