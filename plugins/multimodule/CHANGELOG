@@ -2,13 +2,15 @@ MULTIMODULE VERSION 0.6 (16/07/2013)
 
 Enhancements
 ============
-* Added URL namespacing (Tim Badolato)
+* Added URL namespacing #3 (Tim Badolato)
 * Module URL param can be mandatory (Tim Badolato)
 * Allow set(multiModulePaths) to override modules search (Singgih Cahyono)
 
 Miscellaneous
 =============
-* Wheels compatibility: 1.1.8, 1.2.0
+* Wheels compatibility: 1.1.8, 1.2.0 #8 (Singgih Cahyono, Tim Badolato)
+* Added Unit Tests (Singgih Cahyono)
+* Added Continuous Integration and badge in README.md (Singgih Cahyono)
 
 MULTIMODULE VERSION 0.2-0.5 (15/07/2013)
 
