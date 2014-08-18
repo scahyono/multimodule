@@ -23,13 +23,13 @@ Benefits of embedded-container-test versus full-integration-test
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>net.sidic</groupId>
 	<artifactId>multimodule</artifactId>
-	<version>0.6-SNAPSHOT</version>
+	<version>1.0-SNAPSHOT</version>
 	<packaging>war</packaging>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<cfwheelsVersion>1.1.8</cfwheelsVersion>
+		<cfwheelsVersion>1.3</cfwheelsVersion>
 		<cfwheelsZipfile>v${cfwheelsVersion}.zip</cfwheelsZipfile>
-		<railoVersion>3.3.5.004</railoVersion>
+		<railoVersion>4.2.1.000</railoVersion>
 		<jettyVersion>8.1.15.v20140411</jettyVersion>
 		<railoConfig>railo-server.xml</railoConfig>
 	</properties>

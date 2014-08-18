@@ -3,7 +3,7 @@
 	<cfset this.$modulesPath = getDirectoryFromPath(getBaseTemplatePath()) & '/modules'>
 
 	<cffunction name="init" access="public" output="false" returntype="any">
-		<cfset this.version = "1.1.8,1.2.0" />
+		<cfset this.version = "1.1.8,1.3" />
 		<cfset $buildModulesCache()>
 		<cfreturn this />
 	</cffunction>
