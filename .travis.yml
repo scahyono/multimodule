@@ -1,2 +1,2 @@
 language : java
-script : mvn verify && mvn clean && mvn verify -DcfwheelsVersion=master -DcfwheelsZipfile=master.zip
+script : mvn verify && mvn clean && mvn verify -DcfwheelsVersion=1.3 -DcfwheelsZipfile=1.3.zip -DrailoVersion=4.2.1.000
