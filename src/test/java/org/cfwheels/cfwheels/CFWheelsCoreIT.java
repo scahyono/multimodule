@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
@@ -77,6 +78,7 @@ public class CFWheelsCoreIT {
     
 	@BeforeClass
 	static public void setUpServices() throws Exception {
+		Files.copy(Paths.get("wheels/tests/env.cfm"), Paths.get("wheels/tests/env.cfm.bak"), StandardCopyOption.REPLACE_EXISTING);
 		Path path = Paths.get("target/failsafe-reports");
 		if (!Files.exists(path)) Files.createDirectory(path);
 		driver = new CustomHtmlUnitDriver();
@@ -87,7 +89,12 @@ public class CFWheelsCoreIT {
 	}
 
 	private static void recreateTestDatabase() throws Exception {
-		String content = new String(Files.readAllBytes(Paths.get("wheels/Plugins.cfc")));
+		String content = new String(Files.readAllBytes(Paths.get("wheels/tests/env.cfm")));
+		content = content.replace("<cfset application.wheels.plugins = {}>","<!--- code removed --->");
+		content = content.replace("<cfset application.wheels.mixins = {}>","<!--- code removed --->");
+		Files.write(Paths.get("wheels/tests/env.cfm"), content.getBytes());
+
+		content = new String(Files.readAllBytes(Paths.get("wheels/Plugins.cfc")));
 		content = content.replace("mixableComponents = \"application,dispatch,controller,model,cache,base,connection,microsoftsqlserver,mysql,oracle,postgresql,h2\"","mixableComponents = \"application,dispatch,controller,model,cache,base,connection,microsoftsqlserver,mysql,oracle,postgresql,h2,test\"");
 		Files.write(Paths.get("wheels/Plugins.cfc"), content.getBytes());
 		Files.write(Paths.get("config/settings.cfm"), "<cfset set(deletePluginDirectories=false)>\n<cfset set(dataSourceName=\"wheelstestdb\")>".getBytes());
@@ -130,6 +137,9 @@ public class CFWheelsCoreIT {
 
 	@AfterClass
 	static public void tearDownServices() throws Exception {
+		Files.copy(Paths.get("wheels/tests/env.cfm.bak"), Paths.get("wheels/tests/env.cfm"), StandardCopyOption.REPLACE_EXISTING);
+		Files.delete(Paths.get("wheels/tests/env.cfm.bak"));
+
 		driver.quit();
 	}
 
